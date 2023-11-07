@@ -40,12 +40,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: docker login
-        # env:
-        #   DOCKER_USER: ${{secrets.DOCKER_USER}}
-        #   DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-        #   IMAGE_NAME: ${{secrets.IMAGE_NAME}}
+        env:
+          DOCKER_USER: ${{secrets.DOCKER_USER}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+          IMAGE_NAME: ${{secrets.IMAGE_NAME}}
         run: |
-          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+          echo ${DOCKER_PASSWORD} | docker login --username "$DOCKER_USER" --password-stdin
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag ${{secrets.DOCKER_USER}}/${{secrets.IMAGE_NAME}}:${{ github.sha }}
 
@@ -89,7 +89,8 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             # Login to registry
-            docker login -u $DOCKER_USER -p $DOCKER_PASSWORD 
+            # docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+            echo ${DOCKER_PASSWORD} | docker login --username "$DOCKER_USER" --password-stdin
             # Stop running container
             docker stop $IMAGE_NAME
             # Remove old container
