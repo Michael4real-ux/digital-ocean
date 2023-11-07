@@ -70,32 +70,32 @@ jobs:
   #         npm install --production
   #         pm2 restart node-app
 
-deploy:
+  deploy:
   # needs: [app-test]
-  runs-on: ubuntu-latest
-  needs: build_and_push
+    runs-on: ubuntu-latest
+    needs: build_and_push
 
-  steps:
-    - name: Deploy to Digital Ocean droplet via SSH action
-      uses: appleboy/ssh-action@v0.1.3
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSHKEY }}
-        passphrase: ${{ secrets.PASSPHRASE }}
-        env:
-          DOCKER_USER: ${{secrets.DOCKER_USER}}
-          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-          IMAGE_NAME: ${{secrets.IMAGE_NAME}}
-        script: |
-          # Login to registry
-          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD 
-          # Stop running container
-          docker stop $IMAGE_NAME
-          # Remove old container
-          docker rm $IMAGE_NAME
-          # Run a new container from a new image
-          docker run -d \
-          --restart always \
-          --name $IMAGE_NAME \
-          $DOCKER_USER/$IMAGE_NAME:$(date +%s)
+    steps:
+      - name: Deploy to Digital Ocean droplet via SSH action
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          env:
+            DOCKER_USER: ${{secrets.DOCKER_USER}}
+            DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+            IMAGE_NAME: ${{secrets.IMAGE_NAME}}
+          script: |
+            # Login to registry
+            docker login -u $DOCKER_USER -p $DOCKER_PASSWORD 
+            # Stop running container
+            docker stop $IMAGE_NAME
+            # Remove old container
+            docker rm $IMAGE_NAME
+            # Run a new container from a new image
+            docker run -d \
+            --restart always \
+            --name $IMAGE_NAME \
+            $DOCKER_USER/$IMAGE_NAME:$(date +%s)
