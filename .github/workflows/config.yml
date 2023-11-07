@@ -14,7 +14,6 @@ on:
 
 jobs:
   app-test:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -22,37 +21,36 @@ jobs:
         node-version: [14.x, 16.x, 18.x]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: yarn install and test
-      run: |
-        yarn install --frozen-lockfile
-        yarn test
-        yarn build
-      env:
-        CI: true
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: yarn install and test
+        run: |
+          yarn install --frozen-lockfile
+          yarn test
+          yarn build
+        env:
+          CI: true
 
   docker-build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: docker login
-      env:
-        DOCKER_USER: ${{secrets.DOCKER_USER}}
-        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-        IMAGE_NAME: ${{secrets.IMAGE_NAME}}
-      run: |
-        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD 
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag $DOCKER_USER/$IMAGE_NAME:$(date +%s)
-      
-    - name: Docker Push
-      run: docker push $DOCKER_USER/$IMAGE_NAME:$(date +%s)
+      - uses: actions/checkout@v3
+      - name: docker login
+        env:
+          DOCKER_USER: ${{secrets.DOCKER_USER}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+          IMAGE_NAME: ${{secrets.IMAGE_NAME}}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag $DOCKER_USER/$IMAGE_NAME:$(date +%s)
+
+      - name: Docker Push
+        run: docker push $DOCKER_USER/$IMAGE_NAME:$(date +%s)
 
   # deploy:
   #   needs: [test]
@@ -73,31 +71,31 @@ jobs:
   #         pm2 restart node-app
 
 deploy:
-    needs: [app-test]
-    runs-on: ubuntu-latest
-    needs: build_and_push
-    
-    steps:
-      - name: Deploy to Digital Ocean droplet via SSH action
-        uses: appleboy/ssh-action@v0.1.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSHKEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
-          env:
-            DOCKER_USER: ${{secrets.DOCKER_USER}}
-            DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-            IMAGE_NAME: ${{secrets.IMAGE_NAME}}
-          script: |
-            # Login to registry
-            docker login -u $DOCKER_USER -p $DOCKER_PASSWORD 
-            # Stop running container
-            docker stop $IMAGE_NAME
-            # Remove old container
-            docker rm $IMAGE_NAME
-            # Run a new container from a new image
-            docker run -d \
-            --restart always \
-            --name $IMAGE_NAME \
-            $DOCKER_USER/$IMAGE_NAME:$(date +%s)
+  # needs: [app-test]
+  runs-on: ubuntu-latest
+  needs: build_and_push
+
+  steps:
+    - name: Deploy to Digital Ocean droplet via SSH action
+      uses: appleboy/ssh-action@v0.1.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSHKEY }}
+        passphrase: ${{ secrets.PASSPHRASE }}
+        env:
+          DOCKER_USER: ${{secrets.DOCKER_USER}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+          IMAGE_NAME: ${{secrets.IMAGE_NAME}}
+        script: |
+          # Login to registry
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD 
+          # Stop running container
+          docker stop $IMAGE_NAME
+          # Remove old container
+          docker rm $IMAGE_NAME
+          # Run a new container from a new image
+          docker run -d \
+          --restart always \
+          --name $IMAGE_NAME \
+          $DOCKER_USER/$IMAGE_NAME:$(date +%s)
