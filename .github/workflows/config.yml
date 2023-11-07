@@ -86,7 +86,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
+          # passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             # Login to registry
             # docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
