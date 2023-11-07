@@ -77,16 +77,16 @@ jobs:
 
     steps:
       - name: Deploy to Digital Ocean droplet via SSH action
+        env:
+            DOCKER_USER: ${{secrets.DOCKER_USER}}
+            DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+            IMAGE_NAME: ${{secrets.IMAGE_NAME}}
         uses: appleboy/ssh-action@v0.1.3
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-          env:
-            DOCKER_USER: ${{secrets.DOCKER_USER}}
-            DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-            IMAGE_NAME: ${{secrets.IMAGE_NAME}}
           script: |
             # Login to registry
             docker login -u $DOCKER_USER -p $DOCKER_PASSWORD 
