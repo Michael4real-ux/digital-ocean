@@ -47,10 +47,10 @@ jobs:
         run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag $DOCKER_USER/$IMAGE_NAME:$(date +%s)
+        run: docker build . --file Dockerfile --tag $DOCKER_USER/$IMAGE_NAME:${{ github.sha }}
 
       - name: Docker Push
-        run: docker push $DOCKER_USER/$IMAGE_NAME:$(date +%s)
+        run: docker push $DOCKER_USER/$IMAGE_NAME:${{ github.sha }}
 
   # deploy:
   #   needs: [test]
@@ -98,4 +98,4 @@ jobs:
             docker run -d \
             --restart always \
             --name $IMAGE_NAME \
-            $DOCKER_USER/$IMAGE_NAME:$(date +%s)
+            $DOCKER_USER/$IMAGE_NAME:${{ github.sha }}
